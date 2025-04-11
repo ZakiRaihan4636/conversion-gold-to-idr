@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konversi Harga Emas ke IDR</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding: 50px 0;
+    }
+
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      background-color: #ffd700;
+      color: #fff;
+      border-radius: 15px 15px 0 0;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+
+    #result {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #28a745;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-gem"></i> Konversi Harga Gold ke IDR</h2>
+      </div>
+      <div class="card-body">
+        <form id="goldForm">
+          <div class="form-group">
+            <label for="gameType">Pilih Game:</label>
+            <select class="form-control" id="gameType" required>
+              <option value="sea">Dragon Nest SEA</option>
+              <option value="classic">Dragon Nest Classic</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="goldWeight">Jumlah Gold:</label>
+            <input type="text" class="form-control" id="goldWeight" placeholder="Contoh: 10.000" required>
+          </div>
+          <div class="form-group">
+            <label for="goldRate">Rate Gold (Rp per 1000G):</label>
+            <input type="text" class="form-control" id="goldRate" placeholder="Contoh: 120" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Hitung <i class="fas fa-calculator"></i></button>
+        </form>
+        <div id="result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Format angka dengan titik ribuan
+    function formatNumber(input) {
+      const numberString = input.replace(/[^,\d]/g, '').toString();
+      const split = numberString.split(',');
+      let sisa = split[0].length % 3;
+      let rupiah = split[0].substr(0, sisa);
+      const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+      if (ribuan) {
+        const separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+      }
+
+      return split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+    }
+
+    // Auto-format input saat diketik
+    document.getElementById('goldWeight').addEventListener('input', function (e) {
+      e.target.value = formatNumber(e.target.value);
+    });
+
+    document.getElementById('goldRate').addEventListener('input', function (e) {
+      e.target.value = formatNumber(e.target.value);
+    });
+
+    document.getElementById('goldForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const gameType = document.getElementById('gameType').value;
+
+      // Hapus titik, ganti koma dengan titik agar bisa dibaca sebagai float
+      const goldWeightStr = document.getElementById('goldWeight').value.replace(/\./g, '').replace(',', '.');
+      const goldRateStr = document.getElementById('goldRate').value.replace(/\./g, '').replace(',', '.');
+
+      const goldWeight = parseFloat(goldWeightStr);
+      const goldRate = parseFloat(goldRateStr);
+
+      if (isNaN(goldWeight) || isNaN(goldRate)) {
+        document.getElementById('result').innerText = 'Input tidak valid. Pastikan hanya angka.';
+        return;
+      }
+
+      // Hitung total berdasarkan jenis game
+      let totalPrice;
+      if (gameType === 'sea') {
+        // SEA: rate per 1000G
+        totalPrice = (goldRate / 1000) * goldWeight;
+      } else {
+        // Classic: rate per 1G
+        totalPrice = goldRate * goldWeight * 10;
+      }
+
+      // Format hasil ke rupiah
+      const formattedPrice = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(totalPrice);
+
+      document.getElementById('result').innerText = `Harga Gold: ${formattedPrice}`;
+    });
+  </script>
+
+</body>
+
+</html>
